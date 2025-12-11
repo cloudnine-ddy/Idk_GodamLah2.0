@@ -15,18 +15,34 @@ class ElderlyScreen extends StatefulWidget {
   State<ElderlyScreen> createState() => _ElderlyScreenState();
 }
 
-class _ElderlyScreenState extends State<ElderlyScreen> {
+class _ElderlyScreenState extends State<ElderlyScreen>
+    with TickerProviderStateMixin {
   // Accessibility Toggles - Initialize from profile
   late bool _isLargeFontMode;
   late bool _isHighContrastMode;
   late String _currentLanguage;
 
-  // Text Controllers
+  // AI State Machine
+  bool _isListening = false;
+  bool _isProcessing = false;
+  bool _isFilling = false;
+  bool _isComplete = false;
+
+  // Animation Controllers
+  late AnimationController _micPulseController;
+  late AnimationController _avatarBounceController;
+  late Animation<double> _micPulseAnimation;
+  late Animation<double> _avatarBounceAnimation;
+
+  // Text Controllers - Start empty
   late TextEditingController _nameController;
   late TextEditingController _icController;
   late TextEditingController _phoneController;
   late TextEditingController _bankController;
   late TextEditingController _aidController;
+
+  // Field highlights
+  final List<bool> _fieldHighlights = [false, false, false, false, false];
 
   @override
   void initState() {
@@ -36,12 +52,40 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
     _isHighContrastMode = widget.profile.highContrast;
     _currentLanguage = widget.profile.languageCode;
 
-    // Initialize controllers with profile data
-    _nameController = TextEditingController(text: widget.profile.fullName);
-    _icController = TextEditingController(text: widget.profile.icNumber);
-    _phoneController = TextEditingController(text: widget.profile.phoneNumber);
-    _bankController = TextEditingController(text: widget.profile.bankAccount);
-    _aidController = TextEditingController(text: widget.profile.aidType);
+    // Initialize controllers with EMPTY values
+    _nameController = TextEditingController();
+    _icController = TextEditingController();
+    _phoneController = TextEditingController();
+    _bankController = TextEditingController();
+    _aidController = TextEditingController();
+
+    // Microphone pulse animation
+    _micPulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _micPulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _micPulseController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Avatar bounce animation
+    _avatarBounceController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _avatarBounceAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(
+      parent: _avatarBounceController,
+      curve: Curves.elasticOut,
+    ));
   }
 
   @override
@@ -51,6 +95,8 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
     _phoneController.dispose();
     _bankController.dispose();
     _aidController.dispose();
+    _micPulseController.dispose();
+    _avatarBounceController.dispose();
     super.dispose();
   }
 
@@ -97,6 +143,78 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
     return english;
   }
 
+  String _getGreeting() {
+    if (_currentLanguage == 'ms') {
+      return widget.profile.name.contains('Lin') ? 'Nenek' : 'Pakcik';
+    } else if (_currentLanguage == 'zh') {
+      return widget.profile.name.contains('Lin') ? '奶奶' : '叔叔';
+    }
+    return widget.profile.name.contains('Lin') ? 'Auntie' : 'Uncle';
+  }
+
+  Future<void> _startAIFilling() async {
+    // Step 1: Listening
+    setState(() {
+      _isListening = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    // Step 2: Processing
+    setState(() {
+      _isListening = false;
+      _isProcessing = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    // Step 3: Sequential Filling
+    setState(() {
+      _isProcessing = false;
+      _isFilling = true;
+    });
+
+    // Fill fields one by one
+    await _fillField(0, _nameController, widget.profile.fullName);
+    await _fillField(1, _icController, widget.profile.icNumber);
+    await _fillField(2, _phoneController, widget.profile.phoneNumber);
+    await _fillField(3, _bankController, widget.profile.bankAccount);
+    await _fillField(4, _aidController, widget.profile.aidType);
+
+    // Complete
+    setState(() {
+      _isFilling = false;
+      _isComplete = true;
+    });
+  }
+
+  Future<void> _fillField(
+    int index,
+    TextEditingController controller,
+    String value,
+  ) async {
+    // Highlight the field
+    setState(() {
+      _fieldHighlights[index] = true;
+    });
+
+    // Bounce avatar
+    _avatarBounceController.forward(from: 0);
+
+    // Ghost typing effect
+    for (int i = 0; i <= value.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 30));
+      controller.text = value.substring(0, i);
+    }
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Remove highlight
+    setState(() {
+      _fieldHighlights[index] = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,12 +257,12 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
                           tooltip: 'High Contrast',
                         ),
                         const SizedBox(width: 8),
-        _buildToolbarButton(
-          icon: '🌐',
-          isActive: _currentLanguage != 'en',
-          onTap: _toggleLanguage,
-          tooltip: 'Language',
-        ),
+                        _buildToolbarButton(
+                          icon: '🌐',
+                          isActive: _currentLanguage != 'en',
+                          onTap: _toggleLanguage,
+                          tooltip: 'Language',
+                        ),
                       ],
                     ),
                   ),
@@ -156,31 +274,61 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // 3D Avatar
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
+                          // 3D Avatar with Processing Indicator
+                          ScaleTransition(
+                            scale: _isFilling
+                                ? _avatarBounceAnimation
+                                : const AlwaysStoppedAnimation(1.0),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.white,
+                                    child: Icon(
+                                      Icons.smart_toy,
+                                      size: 60,
+                                      color: const Color(0xFFFF9800),
+                                    ),
+                                  ),
                                 ),
+                                if (_isProcessing)
+                                  Positioned(
+                                    right: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF4CAF50),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
-                            ),
-                            child: CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.white,
-                              child: Icon(
-                                Icons.smart_toy,
-                                size: 60,
-                                color: const Color(0xFFFF9800),
-                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
 
-                          // Chat Bubble
+                          // Dynamic Chat Bubble
                           Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(16),
@@ -196,11 +344,7 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
                                 ],
                               ),
                               child: Text(
-                                _getText(
-                                  'Uncle, I helped you fill this form. Please check ok?',
-                                  'Pakcik, saya dah isi borang ini. Tolong semak ya?',
-                                  '叔叔，我帮你填好表格了。请检查好吗？',
-                                ),
+                                _getAIMessage(),
                                 style: GoogleFonts.poppins(
                                   fontSize: _fontSize(16),
                                   fontWeight: FontWeight.w600,
@@ -218,100 +362,408 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
               ),
             ),
 
-            // PART 2: Smart Form (Bottom 70%, Scrollable)
+            // PART 2: Interactive Content Area
             Expanded(
               child: Container(
                 color: _isHighContrastMode ? Colors.black : Colors.white,
-                child: ListView(
-                  padding: const EdgeInsets.all(20),
-                  physics: const BouncingScrollPhysics(),
-                  children: [
-                    Text(
-                      _getText('AI-Filled Form', 'Borang Diisi AI', 'AI填写的表格'),
-                      style: GoogleFonts.poppins(
-                        fontSize: _fontSize(24),
-                        fontWeight: FontWeight.bold,
-                        color: _isHighContrastMode ? Colors.yellow : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _getText(
-                        'Review and edit if needed',
-                        'Semak dan ubah jika perlu',
-                        '检查并根据需要编辑',
-                      ),
-                      style: GoogleFonts.poppins(
-                        fontSize: _fontSize(14),
-                        color: _isHighContrastMode
-                            ? Colors.yellow.withOpacity(0.8)
-                            : Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    _buildFormField(
-                      label: _getText('Full Name', 'Nama Penuh', '全名'),
-                      controller: _nameController,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildFormField(
-                      label: _getText('IC Number', 'No. KP', '身份证号码'),
-                      controller: _icController,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildFormField(
-                      label: _getText('Phone Number', 'No. Telefon', '电话号码'),
-                      controller: _phoneController,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildFormField(
-                      label: _getText('Bank Account', 'Akaun Bank', '银行账户'),
-                      controller: _bankController,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildFormField(
-                      label: _getText('Aid Type', 'Jenis Bantuan', '援助类型'),
-                      controller: _aidController,
-                    ),
-                    const SizedBox(height: 100), // Space for floating button
-                  ],
-                ),
+                child: _isComplete
+                    ? _buildFilledForm()
+                    : _buildMicrophoneArea(),
               ),
             ),
           ],
         ),
       ),
 
-      // PART 3: Floating Action Bar
-      floatingActionButton: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: FloatingActionButton.extended(
-          onPressed: _submitForm,
-          backgroundColor: const Color(0xFFFF9800),
-          elevation: 8,
-          icon: const Icon(
-            Icons.check_circle,
-            size: 32,
-            color: Colors.white,
-          ),
-          label: Text(
-            _getText('CONFIRM & SUBMIT', 'SAHKAN & HANTAR', '确认并提交'),
+      // PART 3: Floating Confirm Button (Only when complete)
+      floatingActionButton: _isComplete
+          ? Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: FloatingActionButton.extended(
+                onPressed: _submitForm,
+                backgroundColor: const Color(0xFFFF9800),
+                elevation: 8,
+                icon: const Icon(
+                  Icons.check_circle,
+                  size: 32,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  _getText('CONFIRM & SUBMIT', 'SAHKAN & HANTAR', '确认并提交'),
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(20),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  String _getAIMessage() {
+    if (_isListening) {
+      return _getText(
+        'Understood, checking STR...',
+        'Faham, menyemak STR...',
+        '明白了，检查STR...',
+      );
+    } else if (_isProcessing) {
+      return _getText(
+        'Processing your details...',
+        'Memproses maklumat anda...',
+        '处理您的详细信息...',
+      );
+    } else if (_isFilling) {
+      return _getText(
+        'Filling in your form...',
+        'Mengisi borang anda...',
+        '填写您的表格...',
+      );
+    } else if (_isComplete) {
+      return _getText(
+        'All done! Please check and press Confirm.',
+        'Siap! Sila semak dan tekan Sahkan.',
+        '完成！请检查并按确认。',
+      );
+    } else {
+      return _getText(
+        'Hello! Tap a button below OR press the Mic to speak.',
+        'Hello! Tekan butang di bawah ATAU tekan Mic untuk bercakap.',
+        '你好！点击下面的按钮或按麦克风说话。',
+      );
+    }
+  }
+
+  Widget _buildMicrophoneArea() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      physics: const BouncingScrollPhysics(),
+      children: [
+        if (_isListening || _isProcessing)
+          // Listening/Processing State
+          Center(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                SizedBox(
+                  height: 100,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return AnimatedContainer(
+                        duration: Duration(milliseconds: 300 + (index * 100)),
+                        curve: Curves.easeInOut,
+                        width: 8,
+                        height: 20 + (index % 2 == 0 ? 40 : 20),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9800),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  _getText(
+                    'Understood, checking STR...',
+                    'Faham, menyemak STR...',
+                    '明白了，检查STR...',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(24),
+                    fontWeight: FontWeight.bold,
+                    color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFF9800),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else ...[
+          // Voice Input Section
+          const SizedBox(height: 20),
+          Text(
+            _getText('Voice Input', 'Input Suara', '语音输入'),
             style: GoogleFonts.poppins(
               fontSize: _fontSize(20),
               fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1,
+              color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: AnimatedBuilder(
+              animation: _micPulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _micPulseAnimation.value,
+                  child: Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFFF9800),
+                          Color(0xFFFFB74D),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF9800).withOpacity(0.4),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _startAIFilling,
+                        customBorder: const CircleBorder(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.mic,
+                              size: 60,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _getText('Speak', 'Cakap', '说话'),
+                              style: GoogleFonts.poppins(
+                                fontSize: _fontSize(14),
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 40),
+
+          // Manual Selection Section
+          Text(
+            _getText('Or Choose Service', 'Atau Pilih Perkhidmatan', '或选择服务'),
+            style: GoogleFonts.poppins(
+              fontSize: _fontSize(20),
+              fontWeight: FontWeight.bold,
+              color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Service Cards
+          _buildServiceCard(
+            icon: Icons.account_balance_wallet,
+            title: _getText('Check STR Aid', 'Semak Bantuan STR', '检查STR援助'),
+            description: _getText(
+              'View your financial assistance',
+              'Lihat bantuan kewangan anda',
+              '查看您的经济援助',
+            ),
+            onTap: _startAIFilling,
+          ),
+          const SizedBox(height: 16),
+
+          _buildServiceCard(
+            icon: Icons.badge,
+            title: _getText('Renew MyKad', 'Perbaharui MyKad', '更新身份证'),
+            description: _getText(
+              'Check renewal status',
+              'Semak status pembaharuan',
+              '检查更新状态',
+            ),
+            onTap: _startAIFilling,
+          ),
+          const SizedBox(height: 16),
+
+          _buildServiceCard(
+            icon: Icons.local_hospital,
+            title: _getText('Madani Medical', 'Perubatan Madani', 'Madani医疗'),
+            description: _getText(
+              'Access health services',
+              'Akses perkhidmatan kesihatan',
+              '获取健康服务',
+            ),
+            onTap: _startAIFilling,
+          ),
+          const SizedBox(height: 20),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildServiceCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _isHighContrastMode ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: _isHighContrastMode
+              ? Colors.yellow.withOpacity(0.3)
+              : const Color(0xFFFF9800).withOpacity(0.3),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 48,
+                    color: const Color(0xFFFF9800),
+                  ),
+                ),
+                const SizedBox(width: 20),
+
+                // Text Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: _fontSize(22),
+                          fontWeight: FontWeight.bold,
+                          color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: GoogleFonts.poppins(
+                          fontSize: _fontSize(14),
+                          color: _isHighContrastMode
+                              ? Colors.yellow.withOpacity(0.7)
+                              : Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Arrow
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: _isHighContrastMode
+                      ? Colors.yellow.withOpacity(0.5)
+                      : Colors.grey[400],
+                  size: 24,
+                ),
+              ],
             ),
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildFilledForm() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      physics: const BouncingScrollPhysics(),
+      children: [
+        Text(
+          _getText('AI-Filled Form', 'Borang Diisi AI', 'AI填写的表格'),
+          style: GoogleFonts.poppins(
+            fontSize: _fontSize(24),
+            fontWeight: FontWeight.bold,
+            color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _getText(
+            'Review and edit if needed',
+            'Semak dan ubah jika perlu',
+            '检查并根据需要编辑',
+          ),
+          style: GoogleFonts.poppins(
+            fontSize: _fontSize(14),
+            color: _isHighContrastMode
+                ? Colors.yellow.withOpacity(0.8)
+                : Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        _buildFormField(
+          label: _getText('Full Name', 'Nama Penuh', '全名'),
+          controller: _nameController,
+          index: 0,
+        ),
+        const SizedBox(height: 16),
+
+        _buildFormField(
+          label: _getText('IC Number', 'No. KP', '身份证号码'),
+          controller: _icController,
+          index: 1,
+        ),
+        const SizedBox(height: 16),
+
+        _buildFormField(
+          label: _getText('Phone Number', 'No. Telefon', '电话号码'),
+          controller: _phoneController,
+          index: 2,
+        ),
+        const SizedBox(height: 16),
+
+        _buildFormField(
+          label: _getText('Bank Account', 'Akaun Bank', '银行账户'),
+          controller: _bankController,
+          index: 3,
+        ),
+        const SizedBox(height: 16),
+
+        _buildFormField(
+          label: _getText('Aid Type', 'Jenis Bantuan', '援助类型'),
+          controller: _aidController,
+          index: 4,
+        ),
+        const SizedBox(height: 100), // Space for floating button
+      ],
     );
   }
 
@@ -323,7 +775,7 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
   }) {
     return Tooltip(
       message: tooltip,
-      child:         Material(
+      child: Material(
         color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
         borderRadius: BorderRadius.circular(12),
         elevation: isActive ? 4 : 0,
@@ -360,7 +812,10 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
   Widget _buildFormField({
     required String label,
     required TextEditingController controller,
+    required int index,
   }) {
+    final isHighlighted = _fieldHighlights[index];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -373,47 +828,66 @@ class _ElderlyScreenState extends State<ElderlyScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          style: GoogleFonts.poppins(
-            fontSize: _fontSize(16),
-            color: _isHighContrastMode ? Colors.yellow : Colors.black87,
-            fontWeight: FontWeight.w500,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isHighlighted
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withOpacity(0.6),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : [],
           ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: _isHighContrastMode
-                ? Colors.grey[900]
-                : const Color(0xFFFFF8F0),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFFFD700), // Golden border
-                width: 2,
+          child: TextFormField(
+            controller: controller,
+            style: GoogleFonts.poppins(
+              fontSize: _fontSize(16),
+              color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: _isHighContrastMode
+                  ? Colors.grey[900]
+                  : const Color(0xFFFFF8F0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: isHighlighted
+                      ? const Color(0xFFFFD700)
+                      : const Color(0xFFFFD700),
+                  width: isHighlighted ? 3 : 2,
+                ),
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFFFD700), // Golden border
-                width: 2,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: isHighlighted
+                      ? const Color(0xFFFFD700)
+                      : const Color(0xFFFFD700),
+                  width: isHighlighted ? 3 : 2,
+                ),
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(
-                color: Color(0xFFFF9800),
-                width: 3,
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: Color(0xFFFF9800),
+                  width: 3,
+                ),
               ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            ),
-            prefixIcon: Icon(
-              Icons.auto_awesome,
-              color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFFD700),
-              size: 20,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              prefixIcon: Icon(
+                Icons.auto_awesome,
+                color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFFD700),
+                size: 20,
+              ),
             ),
           ),
         ),
