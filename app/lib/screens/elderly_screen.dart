@@ -133,6 +133,111 @@ class _ElderlyScreenState extends State<ElderlyScreen>
     );
   }
 
+  Future<void> _showExitDialog() async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: Colors.white,
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Color(0xFFFF9800),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  _getText(
+                    'Stop Transaction?',
+                    'Hentikan Transaksi?',
+                    '停止交易？',
+                  ),
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(20),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              _getText(
+                'Are you sure you want to go back? Your progress will be lost.',
+                'Adakah anda pasti mahu kembali? Kemajuan anda akan hilang.',
+                '您确定要返回吗？您的进度将丢失。',
+              ),
+              style: GoogleFonts.poppins(
+                fontSize: _fontSize(14),
+                color: Colors.black87,
+                height: 1.5,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: Text(
+                _getText('Cancel', 'Batal', '取消'),
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(16),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFFF9800),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                _getText('Yes, Go Back', 'Ya, Kembali', '是的，返回'),
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(16),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+          actionsPadding: const EdgeInsets.all(16),
+        );
+      },
+    );
+
+    if (shouldExit == true && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   double _fontSize(double baseSize) {
     return _isLargeFontMode ? baseSize * 1.5 : baseSize;
   }
@@ -237,31 +342,59 @@ class _ElderlyScreenState extends State<ElderlyScreen>
               ),
               child: Column(
                 children: [
-                  // Inclusivity Toolbar
+                  // Inclusivity Toolbar + Home Button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildToolbarButton(
-                          icon: 'Aa',
-                          isActive: _isLargeFontMode,
-                          onTap: _toggleFontSize,
-                          tooltip: 'Large Font',
+                        // Home/Exit Button (Left)
+                        Tooltip(
+                          message: _getText('Exit', 'Keluar', '退出'),
+                          child: Material(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              onTap: _showExitDialog,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 52,
+                                height: 52,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.home_rounded,
+                                  size: 32,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildToolbarButton(
-                          icon: '👁️',
-                          isActive: _isHighContrastMode,
-                          onTap: _toggleContrast,
-                          tooltip: 'High Contrast',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildToolbarButton(
-                          icon: '🌐',
-                          isActive: _currentLanguage != 'en',
-                          onTap: _toggleLanguage,
-                          tooltip: 'Language',
+
+                        // Accessibility Toolbar (Right)
+                        Row(
+                          children: [
+                            _buildToolbarButton(
+                              icon: 'Aa',
+                              isActive: _isLargeFontMode,
+                              onTap: _toggleFontSize,
+                              tooltip: 'Large Font',
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolbarButton(
+                              icon: '👁️',
+                              isActive: _isHighContrastMode,
+                              onTap: _toggleContrast,
+                              tooltip: 'High Contrast',
+                            ),
+                            const SizedBox(width: 8),
+                            _buildToolbarButton(
+                              icon: '🌐',
+                              isActive: _currentLanguage != 'en',
+                              onTap: _toggleLanguage,
+                              tooltip: 'Language',
+                            ),
+                          ],
                         ),
                       ],
                     ),
