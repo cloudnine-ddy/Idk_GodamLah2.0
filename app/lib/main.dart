@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/elderly_screen.dart';
 import 'screens/guardian_screen.dart';
+import 'models/user_profile.dart';
 
 void main() {
   runApp(const JagaIDApp());
@@ -39,6 +40,9 @@ class _LandingPageState extends State<LandingPage>
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _waveAnimation;
+
+  // Current User Profile
+  UserProfile currentProfile = UserProfile.mockProfiles[0];
 
   @override
   void initState() {
@@ -84,7 +88,40 @@ class _LandingPageState extends State<LandingPage>
     HapticFeedback.mediumImpact(); // Haptic feedback for "card tap"
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const ElderlyScreen(),
+        builder: (context) => ElderlyScreen(profile: currentProfile),
+      ),
+    );
+  }
+
+  void _loadProfile(int index) {
+    setState(() {
+      currentProfile = UserProfile.mockProfiles[index];
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Profile Loaded: ${currentProfile.name}',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF1565C0),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -147,10 +184,10 @@ class _LandingPageState extends State<LandingPage>
     if (mounted) {
       Navigator.of(context).pop();
 
-      // Navigate to Elderly Screen (Path A)
+      // Navigate to Elderly Screen (Path A) with current profile
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => const ElderlyScreen(),
+          builder: (context) => ElderlyScreen(profile: currentProfile),
         ),
       );
     }
@@ -264,6 +301,15 @@ class _LandingPageState extends State<LandingPage>
                   color: Colors.transparent,
                 ),
               ),
+            ),
+          ),
+
+          // Profile Switcher (ON TOP - Last child in Stack)
+          SafeArea(
+            child: Positioned(
+              top: 8,
+              right: 8,
+              child: _buildProfileSwitcher(),
             ),
           ),
         ],
@@ -518,6 +564,151 @@ class _LandingPageState extends State<LandingPage>
       ),
     );
   }
+
+  Widget _buildProfileSwitcher() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: PopupMenuButton<int>(
+        icon: const Icon(
+          Icons.person_pin,
+          color: Colors.white,
+          size: 28,
+        ),
+        tooltip: 'Switch Profile (Demo)',
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        color: Colors.white,
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 0,
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: currentProfile.name == 'Uncle Tan'
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Load Uncle Tan',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'Default • English',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 1,
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: currentProfile.name == 'Grandma Lin'
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Load Grandma Lin',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.star, size: 14, color: Color(0xFFFFD700)),
+                      ],
+                    ),
+                    Text(
+                      'Chinese • Big Text',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 2,
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: currentProfile.name == 'Uncle Muthu'
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Load Uncle Muthu',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'High Contrast Mode',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+        onSelected: _loadProfile,
+      ),
+    );
+  }
 }
 
 // Custom Painter for Circuit Pattern
@@ -552,5 +743,7 @@ class CircuitPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+
 
 
