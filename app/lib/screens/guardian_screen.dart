@@ -3,14 +3,27 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'success_screen.dart';
 import '../models/user_profile.dart';
+import '../utils/app_globals.dart';
 
-class GuardianScreen extends StatelessWidget {
+class GuardianScreen extends StatefulWidget {
   final UserProfile profile;
 
   const GuardianScreen({
     super.key,
     required this.profile,
   });
+
+  @override
+  State<GuardianScreen> createState() => _GuardianScreenState();
+}
+
+class _GuardianScreenState extends State<GuardianScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // User comes here via pushReplacement after accepting proxy request
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -22,16 +35,19 @@ class GuardianScreen extends StatelessWidget {
             // Dynamic App Bar (The "Proxy Context")
             _buildProxyHeader(context),
 
-            // The Dashboard Grid (Body)
+            // The Dashboard Grid (Body) - Scrollable
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  physics: const BouncingScrollPhysics(),
-                  children: [
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 20,
+                    crossAxisSpacing: 20,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
                     // ALLOWED SERVICES (Green)
                     _buildDashboardCard(
                       context: context,
@@ -68,6 +84,7 @@ class GuardianScreen extends StatelessWidget {
                       onTap: () => _handleRestrictedAccess(context, 'voting'),
                     ),
                   ],
+                ),
                 ),
               ),
             ),
@@ -222,7 +239,7 @@ class GuardianScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        profile.name,
+                        widget.profile.name,
                         style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -358,46 +375,19 @@ class GuardianScreen extends StatelessWidget {
     );
   }
 
-  // SCENARIO A: Allowed Access (Medical, Welfare)
+  // SCENARIO A: Allowed Access (Medical, Welfare) - Manual Entry
   void _handleAllowedAccess(BuildContext context, String service) {
-    // Show success snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Request Successful! $service data for ${profile.name} retrieved.',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return ManualEntryForm(
+          service: service,
+          patientName: widget.profile.name,
+        );
+      },
     );
-
-    // Navigate to success screen
-    Future.delayed(const Duration(milliseconds: 500), () {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const SuccessScreen(),
-        ),
-      );
-    });
   }
 
   // SCENARIO B: Restricted Access (Bank, Voting) - THE WOW MOMENT
@@ -669,5 +659,358 @@ class GuardianScreen extends StatelessWidget {
     if (shouldExit == true) {
       Navigator.of(context).pop();
     }
+  }
+}
+
+// ============================================================================
+// MANUAL ENTRY FORM (Professional, Non-AI Mode)
+// ============================================================================
+
+class ManualEntryForm extends StatefulWidget {
+  final String service;
+  final String patientName;
+
+  const ManualEntryForm({
+    super.key,
+    required this.service,
+    required this.patientName,
+  });
+
+  @override
+  State<ManualEntryForm> createState() => _ManualEntryFormState();
+}
+
+class _ManualEntryFormState extends State<ManualEntryForm> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _purposeController = TextEditingController();
+  final TextEditingController _remarksController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // All fields start EMPTY - manual entry only
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _purposeController.dispose();
+    _remarksController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitApplication() async {
+    // Validate all required fields
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please enter patient name',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    
+    if (_purposeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please fill in the purpose/date field',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show processing state
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    // Simulate processing
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      // Close bottom sheet
+      Navigator.of(context).pop();
+
+      // Navigate to success screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const SuccessScreen(),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Guardian Mode Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2196F3).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF2196F3).withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.shield_outlined,
+                    size: 16,
+                    color: Color(0xFF2196F3),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Guardian Mode • Acting for ${widget.patientName}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2196F3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196F3).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    widget.service == 'Medical'
+                        ? Icons.local_hospital
+                        : Icons.account_balance_wallet,
+                    color: const Color(0xFF2196F3),
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${widget.service} Application',
+                        style: GoogleFonts.poppins(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Manual Entry - Fill in all required fields',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Form Fields
+            _buildTextField(
+              label: 'Patient Name',
+              controller: _nameController,
+              enabled: true, // Manual entry
+              hint: 'Enter patient name',
+              icon: Icons.person_outline,
+            ),
+            const SizedBox(height: 20),
+
+            _buildTextField(
+              label: widget.service == 'Medical'
+                  ? 'Appointment Date & Purpose'
+                  : 'Transaction Purpose',
+              controller: _purposeController,
+              hint: widget.service == 'Medical'
+                  ? 'e.g., Annual checkup - Dec 20, 2024'
+                  : 'e.g., Monthly welfare claim',
+              icon: widget.service == 'Medical'
+                  ? Icons.calendar_today
+                  : Icons.assignment,
+            ),
+            const SizedBox(height: 20),
+
+            _buildTextField(
+              label: 'Remarks (Optional)',
+              controller: _remarksController,
+              hint: 'Additional notes or comments',
+              icon: Icons.note_outlined,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 32),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitApplication,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2196F3),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                  disabledBackgroundColor: Colors.grey[300],
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Submit Application',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    String? hint,
+    IconData? icon,
+    bool enabled = true,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          maxLines: maxLines,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: enabled ? Colors.black87 : Colors.grey[600],
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.poppins(
+              color: Colors.grey[400],
+            ),
+            prefixIcon: icon != null
+                ? Icon(
+                    icon,
+                    color: enabled ? const Color(0xFF2196F3) : Colors.grey[400],
+                    size: 22,
+                  )
+                : null,
+            filled: true,
+            fillColor: enabled ? Colors.grey[50] : Colors.grey[100],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF2196F3),
+                width: 2,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

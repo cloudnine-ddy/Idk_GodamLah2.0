@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'success_screen.dart';
+import 'guardian_screen.dart';
 import '../models/user_profile.dart';
+import '../utils/app_globals.dart';
 
 class ElderlyScreen extends StatefulWidget {
   final UserProfile profile;
@@ -86,6 +88,20 @@ class _ElderlyScreenState extends State<ElderlyScreen>
       parent: _avatarBounceController,
       curve: Curves.elasticOut,
     ));
+
+    // Check for pending proxy authorization (Receiver Flow)
+    _checkPendingAuth();
+  }
+
+  void _checkPendingAuth() {
+    if (AppGlobals.hasPendingAuth) {
+      // Wait for screen to load, then show the proxy request dialog
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showProxyRequestDialog();
+        }
+      });
+    }
   }
 
   @override
@@ -238,6 +254,195 @@ class _ElderlyScreenState extends State<ElderlyScreen>
     }
   }
 
+  void _showProxyRequestDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: Colors.white,
+          title: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF1565C0),
+                  Color(0xFF1976D2),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.vpn_key_rounded,
+                  size: 48,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '🔑 Proxy Request Received',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(22),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2196F3).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF2196F3).withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2196F3).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF2196F3),
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          AppGlobals.pendingAuthName,
+                          style: GoogleFonts.poppins(
+                            fontSize: _fontSize(18),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  _getText(
+                    '${AppGlobals.pendingAuthName} has authorized you to manage their account.',
+                    '${AppGlobals.pendingAuthName} telah memberikan anda kebenaran untuk mengurus akaun mereka.',
+                    '${AppGlobals.pendingAuthName} 已授权您管理他们的账户。',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(15),
+                    color: Colors.black87,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Colors.grey[300]!,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      _getText('Ignore', 'Abaikan', '忽略'),
+                      style: GoogleFonts.poppins(
+                        fontSize: _fontSize(16),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close dialog
+                      _acceptProxyRequest();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2196F3),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.swap_horiz,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getText('ACCEPT & SWITCH', 'TERIMA & TUKAR', '接受并切换'),
+                          style: GoogleFonts.poppins(
+                            fontSize: _fontSize(14),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        );
+      },
+    );
+  }
+
+  void _acceptProxyRequest() {
+    // Switch to Guardian Screen using pushReplacement
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => GuardianScreen(
+          profile: widget.profile,
+        ),
+      ),
+    );
+  }
+
   double _fontSize(double baseSize) {
     return _isLargeFontMode ? baseSize * 1.5 : baseSize;
   }
@@ -320,6 +525,214 @@ class _ElderlyScreenState extends State<ElderlyScreen>
     await Future.delayed(const Duration(milliseconds: 200));
   }
 
+  void _showDelegateAccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_add_alt_1,
+                  size: 40,
+                  color: Color(0xFFFF9800),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _getText(
+                  'Select Guardian to Authorize',
+                  'Pilih Penjaga untuk Kebenaran',
+                  '选择授权监护人',
+                ),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          children: [
+            _buildGuardianOption(
+              context,
+              name: 'Son: Ali',
+              nameMs: 'Anak: Ali',
+              nameZh: '儿子：Ali',
+              icon: Icons.man,
+            ),
+            _buildGuardianOption(
+              context,
+              name: 'Daughter: Mei',
+              nameMs: 'Anak: Mei',
+              nameZh: '女儿：Mei',
+              icon: Icons.woman,
+            ),
+            _buildGuardianOption(
+              context,
+              name: 'Nephew: Muthu',
+              nameMs: 'Anak Saudara: Muthu',
+              nameZh: '侄子：Muthu',
+              icon: Icons.person,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGuardianOption(
+    BuildContext context, {
+    required String name,
+    required String nameMs,
+    required String nameZh,
+    required IconData icon,
+  }) {
+    final displayName = _currentLanguage == 'ms'
+        ? nameMs
+        : _currentLanguage == 'zh'
+            ? nameZh
+            : name;
+
+    return SimpleDialogOption(
+      onPressed: () {
+        Navigator.pop(context);
+        _authorizeGuardian(displayName);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9800).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFFFF9800),
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                displayName,
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(16),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey[400],
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _authorizeGuardian(String guardianName) {
+    // Set global state
+    AppGlobals.hasPendingAuth = true;
+    AppGlobals.selectedGuardianName = guardianName;
+    AppGlobals.pendingAuthName = widget.profile.name; // Set the elderly person's name
+
+    // Show success dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: Colors.white,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  size: 60,
+                  color: Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _getText(
+                  'Access Key Sent!',
+                  'Kunci Akses Dihantar!',
+                  '访问密钥已发送！',
+                ),
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(22),
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _getText(
+                  '$guardianName can now manage your account.',
+                  '$guardianName kini boleh mengurus akaun anda.',
+                  '$guardianName 现在可以管理您的账户。',
+                ),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: _fontSize(14),
+                  color: Colors.black87,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  _getText('OK', 'OK', '好的'),
+                  style: GoogleFonts.poppins(
+                    fontSize: _fontSize(16),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -327,9 +740,11 @@ class _ElderlyScreenState extends State<ElderlyScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // PART 1: AI Header (Top 30%, Fixed)
+            // PART 1: AI Header (Fixed - Not scrollable)
             Container(
-              height: MediaQuery.of(context).size.height * 0.30,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.28,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -371,7 +786,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                           ),
                         ),
 
-                        // Accessibility Toolbar (Right)
+                        // Accessibility Toolbar + Delegate Button (Right)
                         Row(
                           children: [
                             _buildToolbarButton(
@@ -393,6 +808,34 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                               isActive: _currentLanguage != 'en',
                               onTap: _toggleLanguage,
                               tooltip: 'Language',
+                            ),
+                            const SizedBox(width: 12),
+                            // Delegate Access Button
+                            Tooltip(
+                              message: _getText('Request Help', 'Minta Bantuan', '请求帮助'),
+                              child: Material(
+                                color: AppGlobals.hasPendingAuth
+                                    ? const Color(0xFF4CAF50).withOpacity(0.9)
+                                    : Colors.white.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(12),
+                                elevation: AppGlobals.hasPendingAuth ? 4 : 0,
+                                child: InkWell(
+                                  onTap: _showDelegateAccessDialog,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      Icons.person_add_alt_1,
+                                      size: 24,
+                                      color: AppGlobals.hasPendingAuth
+                                          ? Colors.white
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -495,13 +938,16 @@ class _ElderlyScreenState extends State<ElderlyScreen>
               ),
             ),
 
-            // PART 2: Interactive Content Area
+            // PART 2: Interactive Content Area (Scrollable)
             Expanded(
               child: Container(
                 color: _isHighContrastMode ? Colors.black : Colors.white,
-                child: _isComplete
-                    ? _buildFilledForm()
-                    : _buildMicrophoneArea(),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: _isComplete
+                      ? _buildFilledForm()
+                      : _buildMicrophoneArea(),
+                ),
               ),
             ),
           ],
@@ -573,11 +1019,11 @@ class _ElderlyScreenState extends State<ElderlyScreen>
   }
 
   Widget _buildMicrophoneArea() {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(20),
-      physics: const BouncingScrollPhysics(),
-      children: [
-        if (_isListening || _isProcessing)
+      child: Column(
+        children: [
+          if (_isListening || _isProcessing)
           // Listening/Processing State
           Center(
             child: Column(
@@ -619,8 +1065,8 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                 ),
               ],
             ),
-          )
-        else ...[
+          ),
+          if (!_isListening && !_isProcessing) ...[
           // Voice Input Section
           const SizedBox(height: 20),
           Text(
@@ -737,8 +1183,9 @@ class _ElderlyScreenState extends State<ElderlyScreen>
             onTap: _startAIFilling,
           ),
           const SizedBox(height: 20),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -834,10 +1281,10 @@ class _ElderlyScreenState extends State<ElderlyScreen>
   }
 
   Widget _buildFilledForm() {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(20),
-      physics: const BouncingScrollPhysics(),
-      children: [
+      child: Column(
+        children: [
         Text(
           _getText('AI-Filled Form', 'Borang Diisi AI', 'AI填写的表格'),
           style: GoogleFonts.poppins(
@@ -896,7 +1343,8 @@ class _ElderlyScreenState extends State<ElderlyScreen>
           index: 4,
         ),
         const SizedBox(height: 100), // Space for floating button
-      ],
+        ],
+      ),
     );
   }
 
