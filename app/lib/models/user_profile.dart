@@ -4,6 +4,7 @@ class UserProfile {
   final bool needsBigText;
   final bool highContrast;
   final Map<String, String> mockData;
+  final String? notificationMsg; // Proactive notification message
 
   UserProfile({
     required this.name,
@@ -11,6 +12,7 @@ class UserProfile {
     this.needsBigText = false,
     this.highContrast = false,
     required this.mockData,
+    this.notificationMsg,
   });
 
   // Static Mock Profiles
@@ -21,6 +23,7 @@ class UserProfile {
       languageCode: 'en',
       needsBigText: false,
       highContrast: false,
+      notificationMsg: 'Driving License expiring in 5 days!',
       mockData: {
         'fullName': 'Tan Ah Meng',
         'icNumber': '800101-10-5678',
@@ -39,6 +42,7 @@ class UserProfile {
       languageCode: 'zh',
       needsBigText: true,
       highContrast: false,
+      notificationMsg: '您的身份证即将过期，请更新！',
       mockData: {
         'fullName': 'Lin Mei Hua',
         'icNumber': '650515-08-1234',
@@ -57,6 +61,7 @@ class UserProfile {
       languageCode: 'en',
       needsBigText: false,
       highContrast: true,
+      notificationMsg: null, // No notifications
       mockData: {
         'fullName': 'Muthu Kumar',
         'icNumber': '720820-14-3456',
