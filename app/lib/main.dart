@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screens/elderly_screen.dart';
+import 'screens/guardian_screen.dart';
 
 void main() {
   runApp(const JagaIDApp());
@@ -164,110 +166,3 @@ class _LandingPageState extends State<LandingPage>
   }
 }
 
-// ============================================================================
-// PLACEHOLDER SCREENS
-// ============================================================================
-
-class ElderlyScreen extends StatelessWidget {
-  const ElderlyScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF3E0), // Warm cream
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFF9800),
-        title: Text(
-          'Elderly Path',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.accessibility_new,
-              size: 100,
-              color: Color(0xFFFF9800),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'ELDERLY PATH',
-              style: GoogleFonts.poppins(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFFF9800),
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'High Accessibility Mode',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                color: Colors.grey[700],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class GuardianScreen extends StatelessWidget {
-  const GuardianScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF2196F3),
-        title: Text(
-          'Guardian Path',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.shield_outlined,
-              size: 100,
-              color: Color(0xFF2196F3),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'GUARDIAN PATH',
-              style: GoogleFonts.poppins(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2196F3),
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Secure Dashboard',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                color: Colors.grey[700],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
