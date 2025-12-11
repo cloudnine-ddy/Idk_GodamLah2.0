@@ -191,27 +191,41 @@ class _LandingPageState extends State<LandingPage>
 
           // Main Content
           SafeArea(
-            child: Column(
-              children: [
-                // Header Section
-                const SizedBox(height: 40),
-                _buildHeader(),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          // Header Section
+                          const SizedBox(height: 40),
+                          _buildHeader(),
 
-                // Central Scanning Area
-                Expanded(
-                  child: Center(
-                    child: _buildScanningArea(),
+                          // Central Scanning Area
+                          Expanded(
+                            child: Center(
+                              child: _buildScanningArea(),
+                            ),
+                          ),
+
+                          // Instruction & Footer
+                          _buildFooter(),
+                          const SizedBox(height: 20),
+
+                          // MyDigital ID Button
+                          _buildMyDigitalIDButton(),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-
-                // Instruction & Footer
-                _buildFooter(),
-                const SizedBox(height: 20),
-
-                // MyDigital ID Button
-                _buildMyDigitalIDButton(),
-                const SizedBox(height: 24),
-              ],
+                );
+              },
             ),
           ),
 
@@ -538,4 +552,5 @@ class CircuitPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
 
