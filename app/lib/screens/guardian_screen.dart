@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'success_screen.dart';
 
 class GuardianScreen extends StatelessWidget {
   const GuardianScreen({super.key});
@@ -227,59 +228,17 @@ class GuardianScreen extends StatelessWidget {
   }
 
   void _showMedicalInfo(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Appointment Booked',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF4CAF50),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        duration: const Duration(seconds: 3),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const SuccessScreen(),
       ),
     );
   }
 
   void _showWelfareBalance(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.account_balance_wallet,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Balance: RM500',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF2196F3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        duration: const Duration(seconds: 3),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const SuccessScreen(),
       ),
     );
   }

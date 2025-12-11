@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'success_screen.dart';
 
 class ElderlyScreen extends StatelessWidget {
   const ElderlyScreen({super.key});
@@ -63,39 +64,31 @@ class ElderlyScreen extends StatelessWidget {
                   physics: const BouncingScrollPhysics(),
                   children: [
                     _buildActionCard(
+                      context: context,
                       icon: Icons.account_balance_wallet,
                       title: 'Check Aid',
                       description: 'See your STR money',
-                      onPressed: () {
-                        // TODO: Navigate to aid check screen
-                      },
                     ),
                     const SizedBox(height: 20),
                     _buildActionCard(
+                      context: context,
                       icon: Icons.medical_services,
                       title: 'Health Info',
                       description: 'View medical records',
-                      onPressed: () {
-                        // TODO: Navigate to health info screen
-                      },
                     ),
                     const SizedBox(height: 20),
                     _buildActionCard(
+                      context: context,
                       icon: Icons.phone_in_talk,
                       title: 'Call Guardian',
                       description: 'Contact your family',
-                      onPressed: () {
-                        // TODO: Navigate to call screen
-                      },
                     ),
                     const SizedBox(height: 20),
                     _buildActionCard(
+                      context: context,
                       icon: Icons.emergency,
                       title: 'Emergency',
                       description: 'Get help now',
-                      onPressed: () {
-                        // TODO: Navigate to emergency screen
-                      },
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -149,10 +142,10 @@ class ElderlyScreen extends StatelessWidget {
   }
 
   Widget _buildActionCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String description,
-    required VoidCallback onPressed,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -170,7 +163,13 @@ class ElderlyScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onPressed,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SuccessScreen(),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(30),
           child: Padding(
             padding: const EdgeInsets.all(28),
@@ -218,7 +217,7 @@ class ElderlyScreen extends StatelessWidget {
                 const SizedBox(width: 16),
                 
                 // Massive YES Button
-                _buildYesButton(onPressed),
+                _buildYesButton(context),
               ],
             ),
           ),
@@ -227,7 +226,7 @@ class ElderlyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildYesButton(VoidCallback onPressed) {
+  Widget _buildYesButton(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -250,7 +249,13 @@ class ElderlyScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onPressed,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SuccessScreen(),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(20),
           child: Container(
             padding: const EdgeInsets.symmetric(
