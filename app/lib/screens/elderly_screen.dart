@@ -94,7 +94,8 @@ class _ElderlyScreenState extends State<ElderlyScreen>
   }
 
   void _checkPendingAuth() {
-    if (AppGlobals.hasPendingAuth) {
+    // Only show proxy request if there's a pending auth AND the current user is "Ali" (the guardian)
+    if (AppGlobals.hasPendingAuth && widget.profile.name == 'Ali') {
       // Wait for screen to load, then show the proxy request dialog
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
@@ -643,15 +644,6 @@ class _ElderlyScreenState extends State<ElderlyScreen>
     if (_currentLanguage == 'ms') return malay;
     if (_currentLanguage == 'zh' && chinese != null) return chinese;
     return english;
-  }
-
-  String _getGreeting() {
-    if (_currentLanguage == 'ms') {
-      return widget.profile.name.contains('Lin') ? 'Nenek' : 'Pakcik';
-    } else if (_currentLanguage == 'zh') {
-      return widget.profile.name.contains('Lin') ? '奶奶' : '叔叔';
-    }
-    return widget.profile.name.contains('Lin') ? 'Auntie' : 'Uncle';
   }
 
   Future<void> _startAIFilling() async {

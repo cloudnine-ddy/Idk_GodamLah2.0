@@ -704,6 +704,49 @@ class _LandingPageState extends State<LandingPage>
               ],
             ),
           ),
+          PopupMenuItem(
+            value: 3,
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: currentProfile.name == 'Ali'
+                        ? const Color(0xFF4CAF50)
+                        : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Load Ali',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.family_restroom, size: 14, color: Color(0xFF2196F3)),
+                      ],
+                    ),
+                    Text(
+                      'Guardian (Son)',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
         onSelected: _loadProfile,
       ),

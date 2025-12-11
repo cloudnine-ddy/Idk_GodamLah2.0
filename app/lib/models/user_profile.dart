@@ -73,6 +73,25 @@ class UserProfile {
         'address': '789, Jalan Sentul, KL',
       },
     ),
+
+    // Profile 4: Ali (Guardian - Son)
+    UserProfile(
+      name: 'Ali',
+      languageCode: 'en',
+      needsBigText: false,
+      highContrast: false,
+      notificationMsg: null,
+      mockData: {
+        'fullName': 'Ali bin Abdullah',
+        'icNumber': '900315-10-1234',
+        'phoneNumber': '+60 12-987 6543',
+        'bankAccount': 'Public Bank - 1122334455',
+        'aidType': 'STR (Sumbangan Tunai Rahmah)',
+        'strStatus': 'Eligible',
+        'amount': 'RM400',
+        'address': '321, Jalan Raja Laut, KL',
+      },
+    ),
   ];
 
   // Helper getters for quick access
