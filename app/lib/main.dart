@@ -130,7 +130,7 @@ class _LandingPageState extends State<LandingPage>
     HapticFeedback.mediumImpact(); // Haptic feedback for "card tap"
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const GuardianScreen(),
+        builder: (context) => GuardianScreen(profile: currentProfile),
       ),
     );
   }
