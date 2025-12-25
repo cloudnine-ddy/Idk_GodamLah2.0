@@ -929,13 +929,14 @@ class _ElderlyScreenState extends State<ElderlyScreen>
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * 0.28,
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFFF9800).withOpacity(0.9),
-                    const Color(0xFFFFB74D).withOpacity(0.8),
+                    Color(0xFF0D47A1),
+                    Color(0xFF1565C0),
+                    Color(0xFF1976D2),
                   ],
                 ),
               ),
@@ -1102,9 +1103,9 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                                     radius: 50,
                                     backgroundColor: Colors.white,
                                     child: Icon(
-                                      Icons.smart_toy,
+                                      Icons.verified_user,
                                       size: 60,
-                                      color: const Color(0xFFFF9800),
+                                      color: const Color(0xFF1565C0),
                                     ),
                                   ),
                                 ),
@@ -1191,7 +1192,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: FloatingActionButton.extended(
                 onPressed: _submitForm,
-                backgroundColor: const Color(0xFFFF9800),
+                backgroundColor: const Color(0xFF1565C0),
                 elevation: 8,
                 icon: const Icon(
                   Icons.check_circle,
@@ -1272,7 +1273,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                         height: 20 + (index % 2 == 0 ? 40 : 20),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF9800),
+                          color: const Color(0xFF1565C0),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -1290,7 +1291,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                   style: GoogleFonts.poppins(
                     fontSize: _fontSize(24),
                     fontWeight: FontWeight.bold,
-                    color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFF9800),
+                    color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1565C0),
                   ),
                 ),
               ],
@@ -1304,7 +1305,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
             style: GoogleFonts.poppins(
               fontSize: _fontSize(20),
               fontWeight: FontWeight.bold,
-              color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+              color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1565C0),
             ),
           ),
           const SizedBox(height: 16),
@@ -1321,13 +1322,13 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
                         colors: [
-                          Color(0xFFFF9800),
-                          Color(0xFFFFB74D),
+                          Color(0xFF1565C0),
+                          Color(0xFF1976D2),
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFF9800).withOpacity(0.4),
+                          color: const Color(0xFF1565C0).withOpacity(0.4),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
@@ -1372,7 +1373,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
             style: GoogleFonts.poppins(
               fontSize: _fontSize(20),
               fontWeight: FontWeight.bold,
-              color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+              color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1565C0),
             ),
           ),
           const SizedBox(height: 16),
@@ -1432,7 +1433,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
         border: Border.all(
           color: _isHighContrastMode
               ? Colors.yellow.withOpacity(0.3)
-              : const Color(0xFFFF9800).withOpacity(0.3),
+              : const Color(0xFF1565C0).withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
@@ -1456,13 +1457,13 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withOpacity(0.1),
+                    color: const Color(0xFF1565C0).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
                     icon,
                     size: 48,
-                    color: const Color(0xFFFF9800),
+                    color: const Color(0xFF1565C0),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -1520,7 +1521,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
           style: GoogleFonts.poppins(
             fontSize: _fontSize(24),
             fontWeight: FontWeight.bold,
-            color: _isHighContrastMode ? Colors.yellow : Colors.black87,
+            color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1565C0),
           ),
         ),
         const SizedBox(height: 8),
@@ -1603,7 +1604,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isActive ? const Color(0xFFFF9800) : Colors.white,
+                      color: isActive ? const Color(0xFF1565C0) : Colors.white,
                     ),
                   )
                 : Text(
@@ -1611,7 +1612,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isActive ? const Color(0xFFFF9800) : Colors.white,
+                      color: isActive ? const Color(0xFF1565C0) : Colors.white,
                     ),
                   ),
           ),
@@ -1635,7 +1636,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
           style: GoogleFonts.poppins(
             fontSize: _fontSize(14),
             fontWeight: FontWeight.w600,
-            color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFF9800),
+            color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1565C0),
           ),
         ),
         const SizedBox(height: 8),
@@ -1646,7 +1647,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
             boxShadow: isHighlighted
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withOpacity(0.6),
+                      color: const Color(0xFF1976D2).withOpacity(0.6),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -1669,8 +1670,8 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
                   color: isHighlighted
-                      ? const Color(0xFFFFD700)
-                      : const Color(0xFFFFD700),
+                      ? const Color(0xFF1565C0)
+                      : const Color(0xFF1976D2),
                   width: isHighlighted ? 3 : 2,
                 ),
               ),
@@ -1678,15 +1679,15 @@ class _ElderlyScreenState extends State<ElderlyScreen>
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
                   color: isHighlighted
-                      ? const Color(0xFFFFD700)
-                      : const Color(0xFFFFD700),
+                      ? const Color(0xFF1565C0)
+                      : const Color(0xFF1976D2),
                   width: isHighlighted ? 3 : 2,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: const BorderSide(
-                  color: Color(0xFFFF9800),
+                  color: Color(0xFF1565C0),
                   width: 3,
                 ),
               ),
@@ -1696,7 +1697,7 @@ class _ElderlyScreenState extends State<ElderlyScreen>
               ),
               prefixIcon: Icon(
                 Icons.auto_awesome,
-                color: _isHighContrastMode ? Colors.yellow : const Color(0xFFFFD700),
+                color: _isHighContrastMode ? Colors.yellow : const Color(0xFF1976D2),
                 size: 20,
               ),
             ),
