@@ -887,104 +887,99 @@ class _BindingScreenState extends State<BindingScreen>
   // STEP 1 (NFC): Guardian Authentication
   // ============================================================================
   Widget _buildGuardianAuth() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Text(
-          'Authenticate Yourself',
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1565C0),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Tap your Smart ID card to verify your identity',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 48),
-
-        // NFC Tap Animation
-        ScaleTransition(
-          scale: _pulseAnimation,
-          child: Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF1565C0).withOpacity(0.1),
-              border: Border.all(
-                color: const Color(0xFF1565C0).withOpacity(0.3),
-                width: 3,
-              ),
-            ),
-            child: Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF1565C0),
-                ),
-                child: _isProcessing
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.contactless,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-
-        // Simulate tap button
-        if (!_isProcessing)
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: _simulateGuardianTap,
-              icon: const Icon(Icons.touch_app),
-              label: Text(
-                'Simulate Card Tap',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
-
-        if (_isProcessing) ...[
+    return GestureDetector(
+      onTap: _isProcessing ? null : _simulateGuardianTap,
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
           Text(
-            'Reading card...',
+            'Authenticate Yourself',
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
               color: const Color(0xFF1565C0),
             ),
           ),
+          const SizedBox(height: 8),
+          Text(
+            _isProcessing 
+                ? 'Reading card...'
+                : 'Tap anywhere to simulate card tap',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: _isProcessing ? const Color(0xFF1565C0) : Colors.grey[600],
+              fontWeight: _isProcessing ? FontWeight.w500 : FontWeight.normal,
+            ),
+          ),
+          const SizedBox(height: 48),
+
+          // NFC Tap Animation - Tappable
+          ScaleTransition(
+            scale: _pulseAnimation,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF1565C0).withOpacity(0.1),
+                border: Border.all(
+                  color: const Color(0xFF1565C0).withOpacity(0.3),
+                  width: 3,
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF1565C0),
+                  ),
+                  child: _isProcessing
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.contactless,
+                          size: 60,
+                          color: Colors.white,
+                        ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Hint text
+          if (!_isProcessing)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1565C0).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.touch_app, color: Color(0xFF1565C0), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tap anywhere',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1565C0),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
-      ],
+      ),
     );
   }
 
@@ -1007,131 +1002,126 @@ class _BindingScreenState extends State<BindingScreen>
   // STEP 2: Senior Card Tap (NFC Tap Simulation)
   // ============================================================================
   Widget _buildSeniorTap() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
+    return GestureDetector(
+      onTap: _isProcessing ? null : _simulateSeniorTap,
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
 
-        // Success badge for guardian
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF4CAF50).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF4CAF50)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Your identity verified',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4CAF50),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        Text(
-          "Now Tap Senior's Card",
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1565C0),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Ask the senior to tap their Smart ID card',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 48),
-
-        // NFC Tap Animation (different color for senior)
-        ScaleTransition(
-          scale: _pulseAnimation,
-          child: Container(
-            width: 180,
-            height: 180,
+          // Success badge for guardian
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFFFF9800).withOpacity(0.1),
-              border: Border.all(
-                color: const Color(0xFFFF9800).withOpacity(0.3),
-                width: 3,
-              ),
+              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF4CAF50)),
             ),
-            child: Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFFFF9800),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Your identity verified',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF4CAF50),
+                  ),
                 ),
-                child: _isProcessing
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.elderly,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-              ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-        // Simulate tap button
-        if (!_isProcessing)
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: _simulateSeniorTap,
-              icon: const Icon(Icons.touch_app),
-              label: Text(
-                "Simulate Senior's Card Tap",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF9800),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-          ),
-
-        if (_isProcessing) ...[
           Text(
-            "Reading senior's card...",
+            "Now Tap Senior's Card",
             style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFFFF9800),
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1565C0),
             ),
           ),
+          const SizedBox(height: 8),
+          Text(
+            _isProcessing
+                ? "Reading senior's card..."
+                : 'Tap anywhere to simulate card tap',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: _isProcessing ? const Color(0xFFFF9800) : Colors.grey[600],
+              fontWeight: _isProcessing ? FontWeight.w500 : FontWeight.normal,
+            ),
+          ),
+          const SizedBox(height: 48),
+
+          // NFC Tap Animation (different color for senior) - Tappable
+          ScaleTransition(
+            scale: _pulseAnimation,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF9800).withOpacity(0.1),
+                border: Border.all(
+                  color: const Color(0xFFFF9800).withOpacity(0.3),
+                  width: 3,
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFFF9800),
+                  ),
+                  child: _isProcessing
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.elderly,
+                          size: 60,
+                          color: Colors.white,
+                        ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Hint text
+          if (!_isProcessing)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9800).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.touch_app, color: Color(0xFFFF9800), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tap anywhere',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFFFF9800),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
-      ],
+      ),
     );
   }
 
