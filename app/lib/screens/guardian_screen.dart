@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'success_screen.dart';
-import 'binding_screen.dart';
 import '../models/user_profile.dart';
-import '../models/dependent.dart';
-import '../services/binding_service.dart';
 import '../utils/app_globals.dart';
 
 class GuardianScreen extends StatefulWidget {
@@ -73,6 +70,15 @@ class _GuardianScreenState extends State<GuardianScreen> {
                             isRestricted: false,
                             onTap: () => _handleAllowedAccess(context, 'Welfare'),
                           ),
+                          // SECURITY SERVICE (Orange - Special Action)
+                          _buildDashboardCard(
+                            context: context,
+                            icon: Icons.credit_card_off,
+                            title: 'Disable\nSmart ID',
+                            color: const Color(0xFFFF9800),
+                            isRestricted: false,
+                            onTap: () => _handleDisableSmartID(context),
+                          ),
                           // RESTRICTED SERVICES (Red/Grey)
                           _buildDashboardCard(
                             context: context,
@@ -92,23 +98,6 @@ class _GuardianScreenState extends State<GuardianScreen> {
                           ),
                         ],
                       ),
-                      
-                      // Bound Dependents Section
-                      if (BindingService().boundDependents.isNotEmpty) ...[
-                        const SizedBox(height: 32),
-                        Text(
-                          'My Dependents',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1565C0),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...BindingService().boundDependents.map((dependent) => 
-                          _buildDependentCard(dependent),
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -278,161 +267,355 @@ class _GuardianScreenState extends State<GuardianScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Bind New Dependent Button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _navigateToBinding(context),
-              icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
-              label: Text(
-                'Bind New Dependent',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white, width: 2),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  void _navigateToBinding(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const BindingScreen(),
-      ),
-    ).then((result) {
-      if (result == true) {
-        // Binding was successful, refresh the UI
-        setState(() {});
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Text(
-                  'Dependent bound successfully!',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF4CAF50),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+  // ============================================================================
+  // Disable Smart ID Flow
+  // ============================================================================
+  void _handleDisableSmartID(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-        );
-      }
-    });
-  }
-
-  Widget _buildDependentCard(Dependent dependent) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF1565C0).withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.elderly,
-              size: 28,
-              color: Color(0xFF1565C0),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  dependent.nickname,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+          backgroundColor: Colors.white,
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF9800).withOpacity(0.1),
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  dependent.fullName,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                child: const Icon(
+                  Icons.credit_card_off,
+                  size: 48,
+                  color: Color(0xFFFF9800),
                 ),
-                const SizedBox(height: 4),
-                Row(
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Disable Smart ID',
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFFF9800),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'You are about to disable the Smart ID card for:',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      dependent.bindingMethod == 'nfc'
-                          ? Icons.contactless
-                          : Icons.qr_code,
-                      size: 14,
-                      color: Colors.grey[500],
-                    ),
-                    const SizedBox(width: 4),
+                    const Icon(Icons.person, color: Color(0xFF1565C0)),
+                    const SizedBox(width: 8),
                     Text(
-                      'Bound via ${dependent.bindingMethod.toUpperCase()}',
+                      widget.profile.name,
                       style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: Colors.grey[500],
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1565C0),
                       ),
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber, color: Colors.red[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This will immediately disable the card. It can be re-activated at JPN office.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.red[700],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _processDisableSmartID(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF9800),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Disable Card',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
+          ],
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        );
+      },
+    );
+  }
+
+  void _processDisableSmartID(BuildContext context) {
+    // Show processing dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Active',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF4CAF50),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              const SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(
+                  strokeWidth: 4,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF9800)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Processing...',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Disabling Smart ID card',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+
+    // Simulate processing time
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      // Use this.context (widget context) to close the dialog
+      Navigator.of(this.context, rootNavigator: true).pop();
+      _showDisableSuccess(this.context);
+    });
+  }
+
+  void _showDisableSuccess(BuildContext context) {
+    HapticFeedback.heavyImpact();
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: Colors.white,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  size: 64,
+                  color: Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Card Disabled!',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Smart ID card has been disabled',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _buildDetailRow('Card Holder', widget.profile.name),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('IC Number', widget.profile.icNumber),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Status', 'DISABLED'),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Effective', 'Immediately'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2196F3).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFF2196F3), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Reference: DIS-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF2196F3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Done',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
+          ],
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    final isStatus = label == 'Status';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: Colors.grey[600],
           ),
-        ],
-      ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isStatus ? Colors.red : Colors.black87,
+          ),
+        ),
+      ],
     );
   }
 

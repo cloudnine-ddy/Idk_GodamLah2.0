@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'binding_screen.dart';
 import 'elderly_screen.dart';
+import 'guardian_screen.dart';
 import '../models/user_profile.dart';
 import '../models/dependent.dart';
 import '../services/binding_service.dart';
@@ -524,9 +525,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
 
+    // Navigate to Guardian Screen (Proxy Mode) to act on their behalf
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ElderlyScreen(profile: dependentProfile),
+        builder: (context) => GuardianScreen(profile: dependentProfile),
       ),
     );
   }
