@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/elderly_screen.dart';
 import 'screens/guardian_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/field_agent/field_agent_dashboard.dart';
 import 'models/user_profile.dart';
 
 void main() {
@@ -136,6 +137,15 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
+  void _navigateToFieldAgentMode() {
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const FieldAgentDashboard(),
+      ),
+    );
+  }
+
   Future<void> _handleMyDigitalIDLogin() async {
     // Show loading dialog
     showDialog(
@@ -257,7 +267,7 @@ class _LandingPageState extends State<LandingPage>
 
                           // MyDigital ID Button
                           _buildMyDigitalIDButton(),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 60), // Space for positioned Field Agent button
                         ],
                       ),
                     ),
@@ -312,6 +322,14 @@ class _LandingPageState extends State<LandingPage>
               right: 8,
               child: _buildProfileSwitcher(),
             ),
+          ),
+
+          // Field Agent Button (ON TOP of invisible areas)
+          Positioned(
+            bottom: 20,
+            left: 40,
+            right: 40,
+            child: _buildFieldAgentButton(),
           ),
         ],
       ),
@@ -561,6 +579,40 @@ class _LandingPageState extends State<LandingPage>
             borderRadius: BorderRadius.circular(30),
           ),
           backgroundColor: Colors.white.withOpacity(0.1),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldAgentButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: OutlinedButton.icon(
+        onPressed: _navigateToFieldAgentMode,
+        icon: const Icon(
+          Icons.shield,
+          size: 20,
+          color: Color(0xFF0EA5E9),
+        ),
+        label: Text(
+          'Field Agent Mode',
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0EA5E9),
+            letterSpacing: 0.5,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          side: const BorderSide(
+            color: Color(0xFF0EA5E9),
+            width: 1.5,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: const Color(0xFF0D1B2A).withOpacity(0.5),
         ),
       ),
     );
