@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'success_screen.dart';
 import 'guardian_screen.dart';
+import 'dashboard_screen.dart';
 import '../models/user_profile.dart';
 import '../utils/app_globals.dart';
 
@@ -742,67 +744,12 @@ class _ElderlyScreenState extends State<ElderlyScreen>
   }
 
   void _showDelegateAccessDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person_add_alt_1,
-                  size: 40,
-                  color: Color(0xFFFF9800),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _getText(
-                  'Select Guardian to Authorize',
-                  'Pilih Penjaga untuk Kebenaran',
-                  '选择授权监护人',
-                ),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: _fontSize(18),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          children: [
-            _buildGuardianOption(
-              context,
-              name: 'Son: Ali',
-              nameMs: 'Anak: Ali',
-              nameZh: '儿子：Ali',
-              icon: Icons.man,
-            ),
-            _buildGuardianOption(
-              context,
-              name: 'Daughter: Mei',
-              nameMs: 'Anak: Mei',
-              nameZh: '女儿：Mei',
-              icon: Icons.woman,
-            ),
-            _buildGuardianOption(
-              context,
-              name: 'Nephew: Muthu',
-              nameMs: 'Anak Saudara: Muthu',
-              nameZh: '侄子：Muthu',
-              icon: Icons.person,
-            ),
-          ],
-        );
-      },
+    // Navigate to Dashboard (Delegate Mode) for binding and managing dependents
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DashboardScreen(profile: widget.profile),
+      ),
     );
   }
 

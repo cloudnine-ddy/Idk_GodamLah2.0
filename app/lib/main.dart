@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/elderly_screen.dart';
 import 'screens/guardian_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'models/user_profile.dart';
 
 void main() {
@@ -184,7 +185,7 @@ class _LandingPageState extends State<LandingPage>
     if (mounted) {
       Navigator.of(context).pop();
 
-      // Navigate to Elderly Screen (Path A) with current profile
+      // Navigate to Elderly Screen (main services with AI voice)
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ElderlyScreen(profile: currentProfile),

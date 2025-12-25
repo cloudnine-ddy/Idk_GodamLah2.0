@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'success_screen.dart';
+import 'binding_screen.dart';
 import '../models/user_profile.dart';
+import '../models/dependent.dart';
+import '../services/binding_service.dart';
 import '../utils/app_globals.dart';
 
 class GuardianScreen extends StatefulWidget {
@@ -41,51 +44,73 @@ class _GuardianScreenState extends State<GuardianScreen> {
                 physics: const BouncingScrollPhysics(),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 20,
-                    crossAxisSpacing: 20,
-                    childAspectRatio: 0.9, // Taller cards to fit content
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    // ALLOWED SERVICES (Green)
-                    _buildDashboardCard(
-                      context: context,
-                      icon: Icons.local_hospital,
-                      title: 'Medical\nAppt',
-                      color: const Color(0xFF4CAF50),
-                      isRestricted: false,
-                      onTap: () => _handleAllowedAccess(context, 'Medical'),
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      icon: Icons.account_balance_wallet,
-                      title: 'Welfare\nCheck',
-                      color: const Color(0xFF4CAF50),
-                      isRestricted: false,
-                      onTap: () => _handleAllowedAccess(context, 'Welfare'),
-                    ),
-
-                    // RESTRICTED SERVICES (Red/Grey)
-                    _buildDashboardCard(
-                      context: context,
-                      icon: Icons.account_balance,
-                      title: 'Bank\nAccount',
-                      color: Colors.grey[400]!,
-                      isRestricted: true,
-                      onTap: () => _handleRestrictedAccess(context, 'financial'),
-                    ),
-                    _buildDashboardCard(
-                      context: context,
-                      icon: Icons.how_to_vote,
-                      title: 'Voting\nStatus',
-                      color: Colors.grey[400]!,
-                      isRestricted: true,
-                      onTap: () => _handleRestrictedAccess(context, 'voting'),
-                    ),
-                  ],
-                ),
+                      // Services Grid
+                      GridView.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 20,
+                        childAspectRatio: 0.9,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          // ALLOWED SERVICES (Green)
+                          _buildDashboardCard(
+                            context: context,
+                            icon: Icons.local_hospital,
+                            title: 'Medical\nAppt',
+                            color: const Color(0xFF4CAF50),
+                            isRestricted: false,
+                            onTap: () => _handleAllowedAccess(context, 'Medical'),
+                          ),
+                          _buildDashboardCard(
+                            context: context,
+                            icon: Icons.account_balance_wallet,
+                            title: 'Welfare\nCheck',
+                            color: const Color(0xFF4CAF50),
+                            isRestricted: false,
+                            onTap: () => _handleAllowedAccess(context, 'Welfare'),
+                          ),
+                          // RESTRICTED SERVICES (Red/Grey)
+                          _buildDashboardCard(
+                            context: context,
+                            icon: Icons.account_balance,
+                            title: 'Bank\nAccount',
+                            color: Colors.grey[400]!,
+                            isRestricted: true,
+                            onTap: () => _handleRestrictedAccess(context, 'financial'),
+                          ),
+                          _buildDashboardCard(
+                            context: context,
+                            icon: Icons.how_to_vote,
+                            title: 'Voting\nStatus',
+                            color: Colors.grey[400]!,
+                            isRestricted: true,
+                            onTap: () => _handleRestrictedAccess(context, 'voting'),
+                          ),
+                        ],
+                      ),
+                      
+                      // Bound Dependents Section
+                      if (BindingService().boundDependents.isNotEmpty) ...[
+                        const SizedBox(height: 32),
+                        Text(
+                          'My Dependents',
+                          style: GoogleFonts.poppins(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1565C0),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...BindingService().boundDependents.map((dependent) => 
+                          _buildDependentCard(dependent),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -251,6 +276,159 @@ class _GuardianScreenState extends State<GuardianScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Bind New Dependent Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _navigateToBinding(context),
+              icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
+              label: Text(
+                'Bind New Dependent',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white, width: 2),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToBinding(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const BindingScreen(),
+      ),
+    ).then((result) {
+      if (result == true) {
+        // Binding was successful, refresh the UI
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text(
+                  'Dependent bound successfully!',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  Widget _buildDependentCard(Dependent dependent) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1565C0).withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.elderly,
+              size: 28,
+              color: Color(0xFF1565C0),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dependent.nickname,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  dependent.fullName,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      dependent.bindingMethod == 'nfc'
+                          ? Icons.contactless
+                          : Icons.qr_code,
+                      size: 14,
+                      color: Colors.grey[500],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Bound via ${dependent.bindingMethod.toUpperCase()}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Active',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF4CAF50),
+              ),
             ),
           ),
         ],
