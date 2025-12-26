@@ -47,8 +47,8 @@ class _SuccessScreenState extends State<SuccessScreen>
   }
 
   void _returnToLanding() {
-    // Pop all routes and go back to landing page
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Just pop back to elderly screen (which will reset state)
+    Navigator.of(context).pop();
   }
 
   @override
@@ -152,7 +152,7 @@ class _SuccessScreenState extends State<SuccessScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Tap anywhere to continue',
+                          'Tap to start new request',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: Colors.grey[600],
